@@ -1,1 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ProtoStack.io — Protocols, Finally Explained!</title>
+  <meta name="description" content="A visual learning platform for engineers who need to understand protocols and standards — telecom, networking, security, and beyond. No fluff. Real flows. Mental models that stick.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist+Mono:wght@300;400;500&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
 
+  <style>
+    :root {
+      --bg:        #07090f;
+      --surface:   #0e1118;
+      --surface2:  #161b26;
+      --border:    #1e2535;
+      --border2:   #2a3248;
+      --accent:    #d4f54a;
+      --accent2:   #38e8b0;
+      --accent3:   #f06a35;
+      --purple:    #9b7fe8;
+      --text:      #dde2f0;
+      --muted:     #6b7799;
+      --dim:       #3a4260;
+      --r: 8px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'Geist', sans-serif; font-size: 16px;
+      line-height: 1.6; overflow-x: hidden;
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0; z-index: 0;
+      background-image: radial-gradient(circle, #1e2535 1px, transparent 1px);
+      background-size: 32px 32px; opacity: 0.45; pointer-events: none;
+    }
+    body::after {
+      content: ''; position: fixed;
+      top: -200px; left: 50%; transform: translateX(-50%);
+      width: 900px; height: 600px;
+      background: radial-gradient(ellipse at center, rgba(212,245,74,0.055) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+    .z1 { position: relative; z-index: 1; }
+    .mono { font-family: 'Geist Mono', monospace; }
+    .tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: 'Geist Mono', monospace;
+      font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 3px 10px; border-radius: 4px;
+    }
+    .tag-lime   { background: rgba(212,245,74,0.09);  color: var(--accent);  border: 1px solid rgba(212,245,74,0.22); }
+    .tag-teal   { background: rgba(56,232,176,0.09);  color: var(--accent2); border: 1px solid rgba(56,232,176,0.22); }
+    .tag-orange { background: rgba(240,106,53,0.09);  color: var(--accent3); border: 1px solid rgba(240,106,53,0.22); }
+    .tag-purple { background: rgba(155,127,232,0.09); color: var(--purple);  border: 1px solid rgba(155,127,232,0.22); }
+    .tag-dim    { background: rgba(255,255,255,0.04); color: var(--muted);   border: 1px solid var(--border2); }
+
+    /* NAV */
+    nav {
+      position: sticky; top: 0; z-index: 200;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 48px; height: 58px;
+      background: rgba(7,9,15,0.85); backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: 'Geist Mono', monospace; font-size: 1rem; font-weight: 500;
+      color: var(--accent); text-decoration: none;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .logo-mark { display: flex; flex-direction: column; gap: 2.5px; }
+    .logo-mark span {
+      display: block; height: 3px; border-radius: 2px; background: var(--accent);
+      transition: width 0.3s;
+    }
+    .logo-mark span:nth-child(1) { width: 18px; }
+    .logo-mark span:nth-child(2) { width: 14px; background: var(--accent2); }
+    .logo-mark span:nth-child(3) { width: 10px; background: var(--accent3); }
+    .logo-mark span:nth-child(4) { width:  7px; background: var(--purple); }
+    .nav-logo:hover .logo-mark span:nth-child(1) { width: 14px; }
+    .nav-logo:hover .logo-mark span:nth-child(2) { width: 18px; }
+    .nav-logo:hover .logo-mark span:nth-child(3) { width: 14px; }
+    .nav-logo:hover .logo-mark span:nth-child(4) { width: 10px; }
+    .nav-wordmark { line-height: 1; }
+    .nav-wordmark small { display: block; font-size: 0.55rem; color: var(--muted); letter-spacing: 0.15em; margin-top: 1px; }
+    .nav-links { display: flex; gap: 28px; list-style: none; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-right { display: flex; align-items: center; gap: 16px; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-family: 'Geist', sans-serif; font-size: 0.85rem; font-weight: 600;
+      padding: 8px 18px; border-radius: 6px; text-decoration: none;
+      transition: all 0.18s; cursor: pointer; border: none;
+    }
+    .btn-lime { background: var(--accent); color: #07090f; }
+    .btn-lime:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border2); }
+    .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+
+    /* HERO */
+    .hero {
+      position: relative; z-index: 1;
+      max-width: 1160px; margin: 0 auto;
+      padding: 96px 48px 72px;
+    }
+    .hero-eyebrow { display: flex; align-items: center; gap: 10px; margin-bottom: 36px; }
+    .live-dot {
+      width: 7px; height: 7px; border-radius: 50%; background: var(--accent2);
+      animation: livepulse 2.2s ease-in-out infinite;
+    }
+    @keyframes livepulse {
+      0%,100% { opacity:1; box-shadow: 0 0 0 0 rgba(56,232,176,0.5); }
+      50% { opacity:0.6; box-shadow: 0 0 0 6px rgba(56,232,176,0); }
+    }
+    .hero h1 {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(3.2rem, 6vw, 6rem);
+      line-height: 1.02; letter-spacing: -0.025em;
+      margin-bottom: 28px; max-width: 860px;
+    }
+    .hero h1 .hl  { color: var(--accent); font-style: italic; }
+    .hero h1 .hl2 { color: var(--accent2); }
+    .hero-lead { font-size: 1.15rem; color: var(--muted); font-weight: 300; max-width: 580px; line-height: 1.75; margin-bottom: 44px; }
+    .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 72px; }
+    .hero-bottom { display: grid; grid-template-columns: 1fr 1.1fr; gap: 40px; align-items: center; }
+    .hero-stats { display: flex; flex-direction: column; }
+    .stat-row { display: flex; align-items: center; gap: 24px; padding: 18px 0; border-bottom: 1px solid var(--border); }
+    .stat-row:first-child { border-top: 1px solid var(--border); }
+    .stat-num { font-family: 'Geist Mono', monospace; font-size: 1.9rem; color: var(--accent); min-width: 80px; }
+    .stat-label { font-size: 0.92rem; color: var(--text); font-weight: 500; }
+    .stat-sub { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+    .osi-stack {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--r);
+      overflow: hidden; font-family: 'Geist Mono', monospace; font-size: 0.75rem;
+    }
+    .osi-header {
+      padding: 12px 16px; background: var(--surface2); border-bottom: 1px solid var(--border);
+      color: var(--dim); font-size: 0.68rem; letter-spacing: 0.1em;
+      display: flex; justify-content: space-between;
+    }
+    .osi-bar { height: 3px; background: linear-gradient(90deg, var(--accent2), var(--accent), var(--accent3)); opacity: 0.4; }
+    .osi-row {
+      display: grid; grid-template-columns: 36px 1fr 1fr;
+      padding: 10px 16px; border-bottom: 1px solid var(--border);
+      align-items: center; gap: 12px; transition: background 0.15s;
+    }
+    .osi-row:last-child { border-bottom: none; }
+    .osi-row:hover { background: var(--surface2); }
+    .osi-num { color: var(--dim); text-align: center; }
+    .osi-name { font-weight: 500; }
+    .osi-proto { color: var(--muted); font-size: 0.68rem; }
+    .osi-row[data-l="7"] .osi-name { color: var(--accent2); }
+    .osi-row[data-l="6"] .osi-name { color: #5bc8f5; }
+    .osi-row[data-l="5"] .osi-name { color: #a78bfa; }
+    .osi-row[data-l="4"] .osi-name { color: var(--accent); }
+    .osi-row[data-l="3"] .osi-name { color: var(--accent3); }
+    .osi-row[data-l="2"] .osi-name { color: #f472b6; }
+    .osi-row[data-l="1"] .osi-name { color: var(--muted); }
+
+    /* TICKER */
+    .ticker-wrap {
+      position: relative; z-index: 1; overflow: hidden;
+      border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+      background: var(--surface); padding: 12px 0;
+    }
+    .ticker { display: flex; width: max-content; animation: tick 38s linear infinite; }
+    .ticker:hover { animation-play-state: paused; }
+    @keyframes tick { to { transform: translateX(-50%); } }
+    .tick-item {
+      display: inline-flex; align-items: center; gap: 8px; padding: 0 24px;
+      font-family: 'Geist Mono', monospace; font-size: 0.72rem; color: var(--dim);
+      white-space: nowrap; border-right: 1px solid var(--border); transition: color 0.2s;
+    }
+    .tick-item:hover { color: var(--muted); }
+    .tick-item .d { width: 4px; height: 4px; border-radius: 50%; flex-shrink: 0; }
+    .tick-item.t  .d { background: var(--accent2); }
+    .tick-item.i  .d { background: var(--accent); }
+    .tick-item.ie .d { background: var(--accent3); }
+    .tick-item.it .d { background: var(--purple); }
+
+    /* SECTIONS */
+    .wrap { max-width: 1160px; margin: 0 auto; padding: 0 48px; position: relative; z-index: 1; }
+    .section { padding: 96px 0; }
+    .s-label { font-family: 'Geist Mono', monospace; font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); margin-bottom: 10px; }
+    .s-title { font-family: 'Instrument Serif', serif; font-size: clamp(1.9rem, 3.2vw, 2.8rem); line-height: 1.1; margin-bottom: 14px; }
+    .s-sub { color: var(--muted); font-size: 1rem; font-weight: 300; max-width: 500px; line-height: 1.72; margin-bottom: 52px; }
+    hr.divider { border: none; border-top: 1px solid var(--border); position: relative; z-index: 1; }
+
+    /* VALUE GRID */
+    .value-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 2px; background: var(--border); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
+    .value-card { background: var(--surface); padding: 36px 32px; }
+    .value-icon { font-size: 1.8rem; margin-bottom: 20px; }
+    .value-title { font-family: 'Instrument Serif', serif; font-size: 1.3rem; margin-bottom: 10px; }
+    .value-text { color: var(--muted); font-size: 0.875rem; line-height: 1.7; font-weight: 300; }
+    .value-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 20px; }
+    .pill { font-family: 'Geist Mono', monospace; font-size: 0.65rem; letter-spacing: 0.06em; padding: 3px 8px; border-radius: 4px; background: var(--surface2); color: var(--dim); border: 1px solid var(--border2); }
+
+    /* STANDARDS */
+    .standards-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+    .std-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--r);
+      padding: 28px; text-decoration: none; color: inherit;
+      transition: border-color 0.2s, transform 0.2s, background 0.2s;
+      display: flex; flex-direction: column; gap: 14px;
+    }
+    .std-card:hover { border-color: var(--border2); transform: translateY(-3px); background: var(--surface2); }
+    .std-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .std-abbr { font-family: 'Geist Mono', monospace; font-size: 1.4rem; line-height: 1; }
+    .std-name { font-size: 0.92rem; font-weight: 500; margin-top: 4px; }
+    .std-desc { color: var(--muted); font-size: 0.83rem; line-height: 1.65; font-weight: 300; }
+    .std-outputs { font-family: 'Geist Mono', monospace; font-size: 0.68rem; color: var(--dim); margin-top: auto; padding-top: 14px; border-top: 1px solid var(--border); }
+
+    /* CONTENT TYPES */
+    .content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .ct-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 32px; display: flex; flex-direction: column; gap: 18px; }
+    .ct-header { display: flex; align-items: center; gap: 14px; }
+    .ct-num { font-family: 'Geist Mono', monospace; font-size: 0.65rem; color: var(--dim); letter-spacing: 0.1em; border: 1px solid var(--border2); padding: 4px 8px; border-radius: 4px; flex-shrink: 0; }
+    .ct-title { font-family: 'Instrument Serif', serif; font-size: 1.25rem; }
+    .ct-desc { color: var(--muted); font-size: 0.875rem; line-height: 1.7; font-weight: 300; }
+    .ct-preview { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 16px; font-family: 'Geist Mono', monospace; font-size: 0.72rem; line-height: 1.9; color: var(--dim); flex: 1; }
+    .ct-preview .k { color: var(--accent2); }
+    .ct-preview .v { color: var(--accent); }
+    .ct-preview .c { color: var(--dim); }
+    .ct-preview .e { color: var(--accent3); }
+    .ct-preview .p { color: var(--purple); }
+    .lad-entity { font-family: 'Geist Mono', monospace; font-size: 0.62rem; color: var(--accent2); text-align: center; padding: 3px 0; border: 1px solid rgba(56,232,176,0.2); background: rgba(56,232,176,0.06); border-radius: 3px; }
+    .lad-row { display: grid; grid-template-columns: 80px 1fr 80px; align-items: center; }
+    .lad-arrow { display: flex; align-items: center; padding: 6px 8px; color: var(--dim); position: relative; }
+    .lad-arrow::before { content: ''; flex: 1; height: 1px; background: var(--border2); }
+    .lad-arrow::after { content: '▶'; font-size: 0.5rem; color: var(--border2); }
+    .lad-arrow .msg { font-family: 'Geist Mono', monospace; font-size: 0.6rem; background: var(--surface); padding: 1px 4px; border-radius: 2px; color: var(--accent); white-space: nowrap; position: absolute; top: -8px; left: 50%; transform: translateX(-50%); border: 1px solid var(--border2); }
+    .lad-arrow.left::after { display: none; }
+    .lad-arrow.left::before { content: '◀'; font-size: 0.5rem; color: var(--border2); flex: none; }
+    .lad-arrow.left .ln { flex: 1; height: 1px; background: var(--border2); }
+
+    /* TOPICS */
+    .topics-row  { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; }
+    .topics-row2 { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-top: 14px; }
+    .topic-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 24px 22px; text-decoration: none; color: inherit; transition: all 0.2s; }
+    .topic-card:hover { border-color: var(--border2); transform: translateY(-2px); background: var(--surface2); }
+    .topic-emoji { font-size: 1.5rem; margin-bottom: 12px; display: block; }
+    .topic-name { font-size: 0.95rem; font-weight: 500; margin-bottom: 4px; }
+    .topic-count { font-family: 'Geist Mono', monospace; font-size: 0.68rem; color: var(--dim); }
+
+    /* HOW WE WORK */
+    .how-wrap { display: grid; grid-template-columns: 1fr 1.4fr; gap: 60px; align-items: start; }
+    .how-steps { display: flex; flex-direction: column; }
+    .how-step { display: flex; gap: 20px; padding: 28px 0; border-bottom: 1px solid var(--border); }
+    .how-step:first-child { border-top: 1px solid var(--border); }
+    .how-step-num { font-family: 'Geist Mono', monospace; font-size: 0.65rem; color: var(--dim); min-width: 36px; padding-top: 3px; }
+    .how-step-title { font-weight: 500; font-size: 0.95rem; margin-bottom: 6px; }
+    .how-step-text { color: var(--muted); font-size: 0.85rem; line-height: 1.65; font-weight: 300; }
+    .how-visual { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; position: sticky; top: 80px; }
+    .how-vis-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: var(--surface2); border-bottom: 1px solid var(--border); font-family: 'Geist Mono', monospace; font-size: 0.68rem; color: var(--dim); }
+    .how-vis-dots { display: flex; gap: 5px; }
+    .how-vis-dots span { width: 8px; height: 8px; border-radius: 50%; }
+    .how-vis-dots span:nth-child(1) { background: #e8504a; }
+    .how-vis-dots span:nth-child(2) { background: #e8c84a; }
+    .how-vis-dots span:nth-child(3) { background: #4ae87a; }
+    .how-vis-body { padding: 24px; font-family: 'Geist Mono', monospace; font-size: 0.72rem; }
+    .flow-box { background: var(--surface2); border: 1px solid var(--border2); border-radius: 6px; padding: 12px 16px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+    .flow-box .label { color: var(--text); font-size: 0.72rem; }
+    .flow-box .sub { color: var(--dim); font-size: 0.62rem; margin-top: 2px; }
+    .flow-arrow { text-align: center; color: var(--dim); font-size: 0.65rem; padding: 4px 0; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .flow-arrow::before, .flow-arrow::after { content: ''; flex: 1; height: 1px; background: var(--border2); }
+
+    /* NEWSLETTER */
+    .nl-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 64px; display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+    .nl-wrap h2 { font-family: 'Instrument Serif', serif; font-size: 2.4rem; line-height: 1.1; margin-bottom: 14px; }
+    .nl-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+    .nl-form { display: flex; flex-direction: column; gap: 12px; }
+    .nl-input { background: var(--bg); border: 1px solid var(--border2); border-radius: 6px; padding: 13px 16px; color: var(--text); font-family: 'Geist', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.2s; width: 100%; }
+    .nl-input:focus { border-color: var(--accent); }
+    .nl-input::placeholder { color: var(--dim); }
+    .nl-btn { background: var(--accent); color: #07090f; border: none; border-radius: 6px; padding: 13px 20px; font-family: 'Geist', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: opacity 0.15s, transform 0.15s; }
+    .nl-btn:hover { opacity: 0.87; transform: translateY(-1px); }
+    .nl-note { font-family: 'Geist Mono', monospace; font-size: 0.68rem; color: var(--dim); }
+
+    /* FOOTER */
+    footer { position: relative; z-index: 1; border-top: 1px solid var(--border); }
+    .footer-top { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 48px; padding: 56px 48px 48px; max-width: 1160px; margin: 0 auto; }
+    .footer-brand-logo { font-family: 'Geist Mono', monospace; font-size: 0.95rem; color: var(--accent); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .footer-brand-text { color: var(--muted); font-size: 0.83rem; line-height: 1.65; font-weight: 300; max-width: 240px; }
+    .footer-col-title { font-family: 'Geist Mono', monospace; font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim); margin-bottom: 16px; }
+    .footer-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .footer-links a { color: var(--muted); text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--text); }
+    .footer-bottom { border-top: 1px solid var(--border); padding: 20px 48px; max-width: 1160px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+    .footer-copy { font-family: 'Geist Mono', monospace; font-size: 0.68rem; color: var(--dim); }
+    .footer-badges { display: flex; gap: 8px; }
+
+    /* ANIMATIONS */
+    .fade-up { opacity: 0; transform: translateY(20px); animation: fu 0.65s ease forwards; }
+    @keyframes fu { to { opacity: 1; transform: none; } }
+    .d1 { animation-delay: 0.05s; } .d2 { animation-delay: 0.15s; }
+    .d3 { animation-delay: 0.28s; } .d4 { animation-delay: 0.42s; }
+    .d5 { animation-delay: 0.58s; }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      nav { padding: 0 20px; } .nav-links { display: none; }
+      .hero { padding: 60px 20px 48px; } .hero-bottom { grid-template-columns: 1fr; }
+      .wrap { padding: 0 20px; } .value-grid { grid-template-columns: 1fr; }
+      .standards-grid { grid-template-columns: 1fr 1fr; }
+      .content-grid { grid-template-columns: 1fr; }
+      .topics-row { grid-template-columns: 1fr 1fr; }
+      .topics-row2 { grid-template-columns: 1fr 1fr; }
+      .how-wrap { grid-template-columns: 1fr; } .how-visual { position: static; }
+      .nl-wrap { grid-template-columns: 1fr; gap: 36px; padding: 36px 24px; }
+      .footer-top { grid-template-columns: 1fr 1fr; gap: 32px; padding: 40px 20px 32px; }
+      .footer-bottom { padding: 16px 20px; flex-direction: column; gap: 10px; }
+    }
+    @media (max-width: 580px) {
+      .standards-grid, .topics-row, .topics-row2, .footer-top { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="nav-logo">
+    <div class="logo-mark"><span></span><span></span><span></span><span></span></div>
+    <div class="nav-wordmark">ProtoStack.io<small>PROTOCOLS · STANDARDS · TELECOM</small></div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#standards">Standards Map</a></li>
+    <li><a href="#library">Protocols</a></li>
+    <li><a href="#telecom">Telecom</a></li>
+    <li><a href="#paths">Learning Paths</a></li>
+    <li><a href="#about">About</a></li>
+  </ul>
+  <div class="nav-right">
+    <a href="#newsletter" class="btn btn-lime">Subscribe Free</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow fade-up d1">
+    <span class="live-dot"></span>
+    <span class="tag tag-teal">Now building — Phase 0</span>
+    <span class="tag tag-dim">Standards Map dropping first</span>
+  </div>
+
+  <h1 class="fade-up d2">
+    Protocols &amp;<br>Standards,<br>
+    <span class="hl">Finally</span> <span class="hl2">Explained.</span>
+  </h1>
+
+  <p class="hero-lead fade-up d3">
+    A visual learning platform for engineers who are tired of reading 800-page specs.
+    Concept → Flow → Reality. Telecom, networking, security — all mapped, all clear.
+  </p>
+
+  <div class="hero-actions fade-up d4">
+    <a href="#library" class="btn btn-lime">Explore the Library</a>
+    <a href="#standards" class="btn btn-ghost">See the Standards Map →</a>
+  </div>
+
+  <div class="hero-bottom fade-up d5">
+    <div class="hero-stats">
+      <div class="stat-row">
+        <div class="stat-num">6</div>
+        <div class="stat-info">
+          <div class="stat-label">Standards bodies mapped</div>
+          <div class="stat-sub">3GPP · IETF · ITU-T · ETSI · GSMA · IEEE</div>
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-num">3</div>
+        <div class="stat-info">
+          <div class="stat-label">Content types, not just articles</div>
+          <div class="stat-sub">Protocol Cards · Visual Flows · Deep Dives</div>
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-num">4</div>
+        <div class="stat-info">
+          <div class="stat-label">Target audiences</div>
+          <div class="stat-sub">Telecom · Network · Cloud · Technical Mgmt</div>
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-num">Free</div>
+        <div class="stat-info">
+          <div class="stat-label">Always &amp; forever</div>
+          <div class="stat-sub">Open knowledge, no paywalls on fundamentals</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="osi-stack">
+      <div class="osi-header"><span>OSI REFERENCE MODEL</span><span>protostack.io/osi</span></div>
+      <div class="osi-bar"></div>
+      <div class="osi-row" data-l="7"><div class="osi-num">L7</div><div class="osi-name">Application</div><div class="osi-proto">HTTP · SIP · DNS · DIAMETER</div></div>
+      <div class="osi-row" data-l="6"><div class="osi-num">L6</div><div class="osi-name">Presentation</div><div class="osi-proto">TLS · ASN.1 · codec</div></div>
+      <div class="osi-row" data-l="5"><div class="osi-num">L5</div><div class="osi-name">Session</div><div class="osi-proto">SDP · RTP · NetBIOS</div></div>
+      <div class="osi-row" data-l="4"><div class="osi-num">L4</div><div class="osi-name">Transport</div><div class="osi-proto">TCP · UDP · SCTP · QUIC</div></div>
+      <div class="osi-row" data-l="3"><div class="osi-num">L3</div><div class="osi-name">Network</div><div class="osi-proto">IP · GTP · BGP · MPLS</div></div>
+      <div class="osi-row" data-l="2"><div class="osi-num">L2</div><div class="osi-name">Data Link</div><div class="osi-proto">Ethernet · 802.11 · PDCP</div></div>
+      <div class="osi-row" data-l="1"><div class="osi-num">L1</div><div class="osi-name">Physical</div><div class="osi-proto">5G NR · LTE · Fiber · DSL</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- TICKER -->
+<div class="ticker-wrap z1">
+  <div class="ticker">
+    <span class="tick-item t"><span class="d"></span>3GPP Rel-18</span>
+    <span class="tick-item i"><span class="d"></span>RFC 3261 · SIP</span>
+    <span class="tick-item t"><span class="d"></span>GTP-U · GTP-C</span>
+    <span class="tick-item ie"><span class="d"></span>IEEE 802.11ax</span>
+    <span class="tick-item i"><span class="d"></span>QUIC · RFC 9000</span>
+    <span class="tick-item t"><span class="d"></span>NGAP · TS 38.413</span>
+    <span class="tick-item it"><span class="d"></span>ITU-T G.8032</span>
+    <span class="tick-item t"><span class="d"></span>Diameter · RFC 6733</span>
+    <span class="tick-item i"><span class="d"></span>SCTP · RFC 4960</span>
+    <span class="tick-item t"><span class="d"></span>PFCP · TS 29.244</span>
+    <span class="tick-item it"><span class="d"></span>ITU-T Y.1731</span>
+    <span class="tick-item i"><span class="d"></span>BGP · RFC 4271</span>
+    <span class="tick-item t"><span class="d"></span>VoLTE · IMS</span>
+    <span class="tick-item ie"><span class="d"></span>IEEE 802.1Q VLAN</span>
+    <span class="tick-item i"><span class="d"></span>TLS 1.3 · RFC 8446</span>
+    <span class="tick-item t"><span class="d"></span>GSMA SGP.22 eSIM</span>
+    <span class="tick-item t"><span class="d"></span>3GPP Rel-18</span>
+    <span class="tick-item i"><span class="d"></span>RFC 3261 · SIP</span>
+    <span class="tick-item t"><span class="d"></span>GTP-U · GTP-C</span>
+    <span class="tick-item ie"><span class="d"></span>IEEE 802.11ax</span>
+    <span class="tick-item i"><span class="d"></span>QUIC · RFC 9000</span>
+    <span class="tick-item t"><span class="d"></span>NGAP · TS 38.413</span>
+    <span class="tick-item it"><span class="d"></span>ITU-T G.8032</span>
+    <span class="tick-item t"><span class="d"></span>Diameter · RFC 6733</span>
+    <span class="tick-item i"><span class="d"></span>SCTP · RFC 4960</span>
+    <span class="tick-item t"><span class="d"></span>PFCP · TS 29.244</span>
+    <span class="tick-item it"><span class="d"></span>ITU-T Y.1731</span>
+    <span class="tick-item i"><span class="d"></span>BGP · RFC 4271</span>
+    <span class="tick-item t"><span class="d"></span>VoLTE · IMS</span>
+    <span class="tick-item ie"><span class="d"></span>IEEE 802.1Q VLAN</span>
+    <span class="tick-item i"><span class="d"></span>TLS 1.3 · RFC 8446</span>
+    <span class="tick-item t"><span class="d"></span>GSMA SGP.22 eSIM</span>
+  </div>
+</div>
+
+<!-- WHAT IS PROTOSTACK -->
+<div class="wrap">
+  <div class="section">
+    <div class="s-label">// what is protostack</div>
+    <h2 class="s-title">Not a blog. A mental model library.</h2>
+    <p class="s-sub">Three content types, built around how engineers actually learn — not how spec bodies write.</p>
+    <div class="value-grid">
+      <div class="value-card">
+        <div class="value-icon">🃏</div>
+        <div class="value-title">Protocol Cards</div>
+        <p class="value-text">Every protocol gets a consistent card: the problem it solves, where it lives in the stack, its key entities, a 5–12 step message flow, and what breaks — plus how to detect it. Fast to read. Easy to recall.</p>
+        <div class="value-pills">
+          <span class="pill">What problem it solves</span>
+          <span class="pill">OSI placement</span>
+          <span class="pill">Message flow</span>
+          <span class="pill">Failure modes</span>
+          <span class="pill">KPIs + logs</span>
+        </div>
+      </div>
+      <div class="value-card">
+        <div class="value-icon">🔀</div>
+        <div class="value-title">Visual Flows</div>
+        <p class="value-text">Ladder diagrams, packet journey maps, and architecture canvases. Built in a consistent diagram kit so every visual speaks the same language. ProtoStack's signature asset — memorable, shareable, reusable.</p>
+        <div class="value-pills">
+          <span class="pill">Call flows</span>
+          <span class="pill">Packet journeys</span>
+          <span class="pill">Architecture maps</span>
+          <span class="pill">"What happens when…"</span>
+        </div>
+      </div>
+      <div class="value-card">
+        <div class="value-icon">📐</div>
+        <div class="value-title">Deep Dives</div>
+        <p class="value-text">Spec-to-reality. What the standard says vs what actually gets deployed. Failure analysis, roaming edge cases, troubleshooting playbooks. For engineers who need more than surface level.</p>
+        <div class="value-pills">
+          <span class="pill">Real deployments</span>
+          <span class="pill">Spec vs reality</span>
+          <span class="pill">Troubleshooting</span>
+          <span class="pill">Roaming + IPX</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- STANDARDS MAP -->
+<div class="wrap" id="standards">
+  <div class="section">
+    <div class="s-label">// standards ecosystem — phase 0</div>
+    <h2 class="s-title">Who produces what — and why it matters.</h2>
+    <p class="s-sub">Before you understand any protocol, you need to know who wrote it, how it evolved, and how it connects to everything else. This is the map before the journey.</p>
+
+    <div class="standards-grid">
+      <a href="#" class="std-card">
+        <div class="std-card-top">
+          <div><div class="std-abbr" style="color:var(--accent2)">3GPP</div><div class="std-name">3rd Generation Partnership Project</div></div>
+          <span class="tag tag-teal">Telecom</span>
+        </div>
+        <p class="std-desc">Defines cellular networks end-to-end: radio access, core network, IMS, roaming interfaces. Every LTE, VoLTE, and 5G spec lives here. Releases are versioned (Rel-8 → Rel-18+).</p>
+        <div class="std-outputs">Outputs: TS (Technical Spec) · TR (Technical Report) · CRs</div>
+      </a>
+
+      <a href="#" class="std-card">
+        <div class="std-card-top">
+          <div><div class="std-abbr" style="color:var(--accent)">IETF</div><div class="std-name">Internet Engineering Task Force</div></div>
+          <span class="tag tag-lime">Internet</span>
+        </div>
+        <p class="std-desc">Open, volunteer-driven. Produces RFCs that define the internet's protocol stack — TCP, DNS, SIP, QUIC, TLS, BGP, SCTP. Many telecom protocols build on IETF foundations.</p>
+        <div class="std-outputs">Outputs: RFC (Request for Comments) · Internet-Drafts</div>
+      </a>
+
+      <a href="#" class="std-card">
+        <div class="std-card-top">
+          <div><div class="std-abbr" style="color:var(--accent3)">ETSI</div><div class="std-name">European Telecom Standards Institute</div></div>
+          <span class="tag tag-orange">European</span>
+        </div>
+        <p class="std-desc">European partner of 3GPP. Publishes EN/ES standards for telecom equipment, NFV, MEC, and security. Also houses the NFV ISG (Network Functions Virtualisation Industry Spec Group).</p>
+        <div class="std-outputs">Outputs: EN · ES · GS (Group Spec) · GR (Group Report)</div>
+      </a>
+
+      <a href="#" class="std-card">
+        <div class="std-card-top">
+          <div><div class="std-abbr" style="color:var(--purple)">GSMA</div><div class="std-name">GSM Association</div></div>
+          <span class="tag tag-purple">Operators</span>
+        </div>
+        <p class="std-desc">The operators' club. Produces implementation specs (IR docs) and PRDs for inter-operator topics: roaming, eSIM, fraud, IPX connectivity. Where operators agree on how to actually implement 3GPP specs together.</p>
+        <div class="std-outputs">Outputs: IR.xx (Inter-PLMN Roaming) · PRD · SGP (eSIM)</div>
+      </a>
+
+      <a href="#" class="std-card">
+        <div class="std-card-top">
+          <div><div class="std-abbr" style="color:#5bc8f5">ITU-T</div><div class="std-name">ITU Telecom Standardization Sector</div></div>
+          <span class="tag tag-dim">UN Body</span>
+        </div>
+        <p class="std-desc">The UN's telecom standards arm. Governs transport (G-series), OAM (Y-series), SDH/SONET, and international interconnect policy. Essential for transport and OAM engineers.</p>
+        <div class="std-outputs">Outputs: Recommendations (G. / Y. / X. / H. series)</div>
+      </a>
+
+      <a href="#" class="std-card">
+        <div class="std-card-top">
+          <div><div class="std-abbr" style="color:var(--accent3)">IEEE</div><div class="std-name">Inst. of Electrical &amp; Electronics Engineers</div></div>
+          <span class="tag tag-orange">L1–L2</span>
+        </div>
+        <p class="std-desc">Defines the physical and data link layers: Ethernet (802.3), Wi-Fi (802.11), VLANs (802.1Q), Time-Sensitive Networking (TSN). The foundation everything else runs on.</p>
+        <div class="std-outputs">Outputs: IEEE Standards (802.x · 1588 · 1914)</div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- CONTENT TYPES PREVIEW -->
+<div class="wrap" id="library">
+  <div class="section">
+    <div class="s-label">// content library preview</div>
+    <h2 class="s-title">What an explainer actually looks like.</h2>
+    <p class="s-sub">Every piece follows a consistent structure. You always know what you're getting.</p>
+
+    <div class="content-grid">
+      <div class="ct-card">
+        <div class="ct-header">
+          <span class="ct-num">TYPE A</span>
+          <div class="ct-title">Protocol Card</div>
+        </div>
+        <p class="ct-desc">A consistent 5-section card for any protocol. Read one, know how to read all of them.</p>
+        <div class="ct-preview">
+          <span class="k">PROTOCOL</span>: <span class="v">SCTP</span> · RFC 4960<br>
+          <span class="k">PROBLEM</span> : Multi-homing + no HOL blocking<br>
+          <span class="k">LAYER</span>   : L4 Transport (between TCP &amp; UDP)<br>
+          <span class="k">ENTITIES</span>: Association · Streams · Chunks<br>
+          <br>
+          <span class="c">── CORE FLOW ──────────────────────────</span><br>
+          <span class="e">1.</span> INIT → INIT-ACK (4-way cookie handshake)<br>
+          <span class="e">2.</span> COOKIE-ECHO → COOKIE-ACK<br>
+          <span class="e">3.</span> Association established (multi-path)<br>
+          <span class="e">4.</span> DATA chunks sent per stream<br>
+          <span class="e">5.</span> SACK acknowledges individually<br>
+          <br>
+          <span class="c">── FAILURE MODES ──────────────────────</span><br>
+          <span class="p">!</span> INIT collision → tie-breaking via tags<br>
+          <span class="p">!</span> Path failure → HB probing + failover<br>
+          <span class="p">!</span> KPI: hbAckTimeout, pathFailures
+        </div>
+      </div>
+
+      <div class="ct-card">
+        <div class="ct-header">
+          <span class="ct-num">TYPE B</span>
+          <div class="ct-title">Visual Flow — Ladder Diagram</div>
+        </div>
+        <p class="ct-desc">Real call flows from the spec, annotated with actual field values. SIP IMS registration:</p>
+        <div class="ct-preview">
+          <div style="margin-bottom:10px">
+            <div class="lad-row" style="margin-bottom:8px">
+              <div class="lad-entity">UE</div><div></div><div class="lad-entity">P-CSCF</div>
+            </div>
+            <div class="lad-row" style="position:relative;margin-bottom:14px">
+              <div></div>
+              <div class="lad-arrow"><span class="msg">REGISTER sip:ims.mnc001…</span></div>
+              <div></div>
+            </div>
+            <div class="lad-row" style="margin-bottom:8px">
+              <div class="lad-entity">P-CSCF</div><div></div><div class="lad-entity">I-CSCF</div>
+            </div>
+            <div class="lad-row" style="position:relative;margin-bottom:14px">
+              <div></div>
+              <div class="lad-arrow"><span class="msg" style="color:var(--accent2)">REGISTER (+ Via, Route)</span></div>
+              <div></div>
+            </div>
+            <div class="lad-row" style="margin-bottom:8px">
+              <div class="lad-entity">I-CSCF</div><div></div><div class="lad-entity">HSS</div>
+            </div>
+            <div class="lad-row" style="position:relative;margin-bottom:10px">
+              <div></div>
+              <div class="lad-arrow"><span class="msg" style="color:var(--accent3)">Cx: UAR →</span></div>
+              <div></div>
+            </div>
+            <div class="lad-row" style="position:relative;">
+              <div></div>
+              <div class="lad-arrow left"><div class="ln"></div><span class="msg" style="color:var(--accent3)">← UAA (S-CSCF name)</span></div>
+              <div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ct-card">
+        <div class="ct-header">
+          <span class="ct-num">TYPE C</span>
+          <div class="ct-title">Deep Dive — Spec to Reality</div>
+        </div>
+        <p class="ct-desc">What the standard says. What operators actually deploy. Where they diverge.</p>
+        <div class="ct-preview">
+          <span class="c">── EXAMPLE: LTE Roaming (S8 vs S9) ───</span><br><br>
+          <span class="k">SPEC SAYS</span>:<br>
+          &nbsp;S8 = direct GTP between HPLMN + VPLMN<br>
+          &nbsp;S9 = policy coordination via Diameter<br><br>
+          <span class="k">REALITY</span>:<br>
+          &nbsp;<span class="p">!</span> Most operators use LBO (Local Breakout)<br>
+          &nbsp;<span class="p">!</span> HR roaming adds latency via GTP tunnel<br>
+          &nbsp;<span class="p">!</span> IPX intermediaries inject policy nodes<br>
+          &nbsp;<span class="p">!</span> GSMA IR.88 overrides 3GPP defaults<br><br>
+          <span class="k">TROUBLESHOOT</span>:<br>
+          &nbsp;<span class="e">→</span> S6b auth fail → check AAA realm routing<br>
+          &nbsp;<span class="e">→</span> PGW selection → DNS NAPTR order matters
+        </div>
+      </div>
+
+      <div class="ct-card">
+        <div class="ct-header">
+          <span class="ct-num">TYPE D</span>
+          <div class="ct-title">Standards Guide — How to Read Specs</div>
+        </div>
+        <p class="ct-desc">The spec ecosystem explained before you read any individual spec. Phase 0 content.</p>
+        <div class="ct-preview">
+          <span class="c">── HOW TO READ A 3GPP TS ───────────────</span><br><br>
+          <span class="k">SCOPE</span>  : Chapter 1 — read this first<br>
+          <span class="k">DEFS</span>   : Chapter 3 — abbreviations<br>
+          <span class="k">ARCH</span>   : Chapter 4 — reference model<br>
+          <span class="k">FLOWS</span>  : Chapter 6+ — the real content<br><br>
+          <span class="c">── NAVIGATION TRICKS ───────────────────</span><br>
+          <span class="e">→</span> "void" = intentionally blank section<br>
+          <span class="e">→</span> [R17] tag = Release 17 addition<br>
+          <span class="e">→</span> Annex = informative (optional reading)<br>
+          <span class="e">→</span> CRs show what changed between releases<br><br>
+          <span class="p">!</span> Always verify which Release you need
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- TOPICS -->
+<div class="wrap" id="telecom">
+  <div class="section">
+    <div class="s-label">// browse by domain</div>
+    <h2 class="s-title">Everything protocol-driven, covered.</h2>
+    <p class="s-sub">Organized how engineers think — not how spec bodies name things. Telecom is the strong differentiator. Everything else fills in around it.</p>
+
+    <div class="topics-row">
+      <a href="#" class="topic-card">
+        <span class="topic-emoji">📡</span>
+        <div class="topic-name">5G NR &amp; Core</div>
+        <div class="topic-count" style="color:var(--accent2)">3GPP · AMF, SMF, UPF, NRF</div>
+      </a>
+      <a href="#" class="topic-card">
+        <span class="topic-emoji">📞</span>
+        <div class="topic-name">IMS &amp; VoLTE</div>
+        <div class="topic-count" style="color:var(--accent2)">3GPP · P/I/S-CSCF, MGCF, SBC</div>
+      </a>
+      <a href="#" class="topic-card">
+        <span class="topic-emoji">🌍</span>
+        <div class="topic-name">Roaming &amp; IPX</div>
+        <div class="topic-count" style="color:var(--accent2)">GSMA IR.88 · GRX · S8HR · TAP</div>
+      </a>
+      <a href="#" class="topic-card">
+        <span class="topic-emoji">🔁</span>
+        <div class="topic-name">SS7 &amp; Diameter</div>
+        <div class="topic-count" style="color:var(--accent2)">MAP · CAP · Cx · Sh · Ro · Rf</div>
+      </a>
+    </div>
+    <div class="topics-row2">
+      <a href="#" class="topic-card">
+        <span class="topic-emoji">🌐</span>
+        <div class="topic-name">Internet Protocols</div>
+        <div class="topic-count" style="color:var(--accent)">IETF · DNS · TLS · BGP · QUIC · HTTP/2</div>
+      </a>
+      <a href="#" class="topic-card">
+        <span class="topic-emoji">🔒</span>
+        <div class="topic-name">Security &amp; Identity</div>
+        <div class="topic-count" style="color:var(--accent)">5G-AKA · EAP · TLS 1.3 · Diameter Fraud</div>
+      </a>
+      <a href="#" class="topic-card">
+        <span class="topic-emoji">🔗</span>
+        <div class="topic-name">Transport &amp; Routing</div>
+        <div class="topic-count" style="color:var(--accent3)">MPLS · Segment Routing · OAM · MEF</div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- HOW WE WORK -->
+<div class="wrap">
+  <div class="section">
+    <div class="s-label">// our method</div>
+    <h2 class="s-title">Concept → Flow → Reality.</h2>
+    <p class="s-sub">Every explainer follows the same spine. Predictable structure. Reliable depth. No island articles.</p>
+
+    <div class="how-wrap">
+      <div class="how-steps">
+        <div class="how-step">
+          <div class="how-step-num">01</div>
+          <div>
+            <div class="how-step-title">Primary source first</div>
+            <p class="how-step-text">We read the actual TS, RFC, or IR. Not a blog post about it. Not a vendor whitepaper. The real spec — then we figure out what matters.</p>
+          </div>
+        </div>
+        <div class="how-step">
+          <div class="how-step-num">02</div>
+          <div>
+            <div class="how-step-title">Build the mental model</div>
+            <p class="how-step-text">What problem does this protocol solve? What entities exist? How do they talk? We frame it before we flow it. No diagram without a model first.</p>
+          </div>
+        </div>
+        <div class="how-step">
+          <div class="how-step-num">03</div>
+          <div>
+            <div class="how-step-title">Flows with real packet fields</div>
+            <p class="how-step-text">Ladder diagrams with actual field values — not generic arrows between boxes. Wireshark-level fidelity, readable at a glance.</p>
+          </div>
+        </div>
+        <div class="how-step">
+          <div class="how-step-num">04</div>
+          <div>
+            <div class="how-step-title">Spec vs reality — what actually breaks</div>
+            <p class="how-step-text">The gap between what the spec says and what operators deploy. Failure modes, troubleshooting hints, and the KPIs that catch problems early.</p>
+          </div>
+        </div>
+        <div class="how-step">
+          <div class="how-step-num">05</div>
+          <div>
+            <div class="how-step-title">Connected to the ecosystem</div>
+            <p class="how-step-text">Every protocol links to what sits above and below it, what standards body owns it, and what real-world function it serves. No island explainers.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="how-visual">
+        <div class="how-vis-header">
+          <div class="how-vis-dots"><span></span><span></span><span></span></div>
+          <span>protocol card structure</span>
+          <span></span>
+        </div>
+        <div class="how-vis-body">
+          <div class="flow-box">
+            <div><div class="label">📌 What problem it solves</div><div class="sub">The "why" before the "what"</div></div>
+            <span class="tag tag-teal">Concept</span>
+          </div>
+          <div class="flow-arrow">↓ then</div>
+          <div class="flow-box">
+            <div><div class="label">🗺️ Stack placement + entities</div><div class="sub">OSI layer · roles · interfaces</div></div>
+            <span class="tag tag-lime">Model</span>
+          </div>
+          <div class="flow-arrow">↓ then</div>
+          <div class="flow-box">
+            <div><div class="label">🔀 Message flow — 5–12 steps</div><div class="sub">Ladder diagram, real field values</div></div>
+            <span class="tag tag-lime">Flow</span>
+          </div>
+          <div class="flow-arrow">↓ then</div>
+          <div class="flow-box">
+            <div><div class="label">⚡ Spec vs deployment reality</div><div class="sub">What operators actually do</div></div>
+            <span class="tag tag-orange">Reality</span>
+          </div>
+          <div class="flow-arrow">↓ finally</div>
+          <div class="flow-box">
+            <div><div class="label">🔍 Failure modes + KPIs</div><div class="sub">How to detect it · how to fix it</div></div>
+            <span class="tag tag-orange">Ops</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- NEWSLETTER -->
+<div class="wrap" id="newsletter">
+  <div class="section" style="padding-bottom:48px">
+    <div class="nl-wrap">
+      <div>
+        <div class="s-label">// weekly digest</div>
+        <h2>One protocol.<br>Every Thursday.</h2>
+        <p class="s-sub" style="margin-bottom:0">A new explainer every week — protocol card, visual flow, or deep dive. Written for engineers who need to actually understand it, not just know it exists.</p>
+        <div class="nl-meta">
+          <span class="tag tag-teal">Free forever</span>
+          <span class="tag tag-dim">No spam</span>
+          <span class="tag tag-dim">Unsubscribe anytime</span>
+        </div>
+      </div>
+      <div class="nl-form">
+        <input class="nl-input" type="text" placeholder="Your name" />
+        <input class="nl-input" type="email" placeholder="you@company.com" />
+        <button class="nl-btn">Subscribe — It's Free →</button>
+        <div class="nl-note">✓ No paywalls on fundamentals &nbsp;·&nbsp; ✓ Telecom-first &nbsp;·&nbsp; ✓ Unsubscribe any time</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <div>
+      <div class="footer-brand-logo">
+        <div class="logo-mark"><span></span><span></span><span></span><span></span></div>
+        ProtoStack.io
+      </div>
+      <p class="footer-brand-text">A visual learning platform for protocols and standards. Telecom-first. Built by engineers, for engineers.</p>
+    </div>
+    <div>
+      <div class="footer-col-title">Standards</div>
+      <ul class="footer-links">
+        <li><a href="#">3GPP Guide</a></li>
+        <li><a href="#">IETF RFCs</a></li>
+        <li><a href="#">GSMA / IR Docs</a></li>
+        <li><a href="#">ITU-T Series</a></li>
+        <li><a href="#">IEEE 802</a></li>
+        <li><a href="#">How to Read Specs</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Library</div>
+      <ul class="footer-links">
+        <li><a href="#">5G &amp; Core Network</a></li>
+        <li><a href="#">IMS / VoLTE</a></li>
+        <li><a href="#">Roaming &amp; IPX</a></li>
+        <li><a href="#">SS7 &amp; Diameter</a></li>
+        <li><a href="#">Internet Protocols</a></li>
+        <li><a href="#">Transport &amp; MPLS</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Site</div>
+      <ul class="footer-links">
+        <li><a href="#">About &amp; Mission</a></li>
+        <li><a href="#">Learning Paths</a></li>
+        <li><a href="#">Newsletter Archive</a></li>
+        <li><a href="#">RSS Feed</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-copy">© 2026 ProtoStack.io — Protocols, Finally Explained!</div>
+    <div class="footer-badges">
+      <span class="tag tag-teal">Cloudflare Pages</span>
+      <span class="tag tag-dim">Static · Fast · Free</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
